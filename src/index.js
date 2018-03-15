@@ -5,7 +5,7 @@ class SessionTracker extends PureComponent {
   static propTypes = {
     items: PropTypes.array.isRequired,
     sessionState: PropTypes.string,
-    render: PropTypes.func.isRequired
+    children: PropTypes.func.isRequired
   }
 
   static defaultProps = {
@@ -30,19 +30,29 @@ class SessionTracker extends PureComponent {
           currentItemPreparation = this.props.items[currentItem].preparationTime
     
     if (currentItemPrepTimer + 1 < currentItemPreparation) {  // Preparation.
+      const now = new Date(Date.now() - 1000)
       this.setState((prevState, props) => ({
         sessionState: 'preparing',
         currentItemPrepTimer: prevState.currentItemPrepTimer + 1,
       }))
+      if (currentItem === 0 && currentItemPrepTimer === 0 && this.props.onSessionStart)
+        this.props.onSessionStart(now)
+      if (currentItemPrepTimer === 0 && this.props.onItemPreparationStart)
+        this.props.onItemPreparationStart(currentItem, now)
     }
     else if (!currentItemStart) {  // Item Start.
+      const now = new Date()
       this.setState((prevState, props) => ({
         sessionState: 'playing',
-        currentItemStart: new Date(),
+        currentItemStart: now,
         currentItemPrepTimer: prevState.currentItemPrepTimer + 1,
         currentItemTimer: 0,
         currentItemPercentage: 0,
       }))
+      if (this.props.onItemPreparationEnd)
+        this.props.onItemPreparationEnd(currentItem, now)
+      if (this.props.onItemStart)
+        this.props.onItemStart(currentItem, now)
     }
     else if (currentItemTimer + 1 < currentItemDuration) {  // Playing Item
       this.setState((prevState, props) => ({
@@ -53,6 +63,7 @@ class SessionTracker extends PureComponent {
       }))
     }
     else {  // Item End (move to next).
+      const now = new Date()
       this.setState((prevState, props) => ({
         sessionState: props.items[currentItem + 1] ? 'preparing' : 'finished',
         results: [
@@ -60,7 +71,7 @@ class SessionTracker extends PureComponent {
           { 
             position: currentItem,
             start: currentItemStart,
-            end: new Date(),
+            end: now,
             preparation: currentItemPrepTimer,
             duration: prevState.currentItemTimer + 1,
             percentage: Math.round(100 * (prevState.currentItemTimer + 1) / currentItemDuration),
@@ -72,6 +83,10 @@ class SessionTracker extends PureComponent {
         currentItemTimer: 0,
         currentItemPercentage: 0,
       }))
+      if (this.props.onItemEnd)
+        this.props.onItemEnd(currentItem, now)
+      if (!this.props.items[currentItem + 1] && this.props.onSessionEnd)
+        this.props.onSessionEnd(now)
     }
   }
 

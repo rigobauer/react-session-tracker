@@ -56,6 +56,12 @@ class Demo extends Component {
         <SessionTracker
           items={this.testItems}
           sessionState={sessionState}
+          onSessionStart={(datetime) => { console.log('Session started at ' + datetime) }}
+          onItemPreparationStart={(itemPos, datetime) => { console.log('Item ' + itemPos + ' preparation started at ' + datetime) }}
+          onItemPreparationEnd={(itemPos, datetime) => { console.log('Item ' + itemPos + ' preparation ended at ' + datetime) }}
+          onItemStart={(itemPos, datetime) => { console.log('Item ' + itemPos + ' started at ' + datetime) }}
+          onItemEnd={(itemPos, datetime) => { console.log('Item ' + itemPos + ' ended at ' + datetime) }}
+          onSessionEnd={(datetime) => { console.log('Session ended at ' + datetime) }}
         >
           {this.sessionTracker1}
         </SessionTracker>
